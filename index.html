@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pemetaan Konsumen - Ultimate Edition</title>
+    <title>Sistem Pemetaan Konsumen - Level 6 (Master Edition)</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* Desain Sistem Terang & Gelap */
         :root {
-            --bg-body: #f1f5f9; --bg-card: #ffffff;
+            --bg-body: #f4f7fb; --bg-card: #ffffff;
             --text-main: #1e293b; --text-muted: #64748b;
             --border-color: #e2e8f0; --input-bg: #ffffff;
             --primary: #0f172a; --accent: #2563eb;
-            --success: #16a34a; --warning: #ca8a04; --danger: #dc2626;
+            --success: #059669; --warning: #d97706; --danger: #dc2626;
         }
 
         .dark-mode {
@@ -24,91 +23,71 @@
             --primary: #f8fafc;
         }
 
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 10px; color: var(--text-main); transition: background 0.3s; }
-        .container { max-width: 650px; margin: auto; background: var(--bg-card); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: background 0.3s; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 10px; color: var(--text-main); transition: 0.3s; }
+        .container { max-width: 680px; margin: auto; background: var(--bg-card); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        /* Bar Status Internet */
-        #networkStatus { text-align: center; padding: 8px; font-size: 12px; font-weight: bold; color: white; background: var(--success); border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px; display: none; }
-        .offline-bar { background: var(--danger) !important; display: block !important; }
-
-        .header-app { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        .header-app { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
         .header-title h2 { margin: 0; color: var(--primary); font-size: 20px; font-weight: 800; }
-        .header-title p { margin: 3px 0 0 0; color: var(--text-muted); font-size: 12px; }
-        
-        /* Tombol Toggle Dark Mode */
-        .btn-theme { background: var(--border-color); color: var(--text-main); border: none; padding: 8px 12px; border-radius: 20px; font-size: 18px; cursor: pointer; }
+        .btn-theme { background: var(--border-color); color: var(--text-main); border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: var(--bg-body); padding: 12px; border-radius: 10px; text-align: center; border: 1px solid var(--border-color); }
-        .stat-box .title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-        .stat-box .value { font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 2px; }
+        input, button, textarea, select { background: var(--input-bg); color: var(--text-main); padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); font-size: 14px; }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); outline: none; }
+        textarea { resize: vertical; height: 60px; }
         
-        #akurasiStatus { font-size: 13px; font-weight: 700; padding: 6px; border-radius: 6px; background: var(--bg-body); color: var(--text-main); display: inline-block; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 10px; border: 1px solid var(--border-color); }
-
-        input, button, textarea, select { background: var(--input-bg); color: var(--text-main); padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); font-size: 14px; transition: 0.3s; }
-        input:focus, textarea:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
-        textarea { resize: vertical; height: 70px; }
-        
-        .flex-row { display: flex; gap: 8px; }
+        .flex-row { display: flex; gap: 8px; align-items: center; }
         .flex-row input { flex: 1; }
-        .flex-row button { width: auto; background-color: #475569; }
+        .flex-row button { width: auto; background-color: #475569; white-space: nowrap; }
         
-        button { cursor: pointer; font-weight: bold; border: none; color: white; }
-        button:active { transform: scale(0.97); }
-        button.lokasi { background-color: var(--accent); font-size: 15px; }
-        button.tambah { background-color: var(--warning); font-size: 16px; margin-top: 15px; color: #1e293b; padding: 15px; }
-        button.export { background-color: var(--success); margin-top: 25px; font-size: 15px; }
-        button.hapus-semua { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); margin-top: 10px; font-size: 13px; }
+        button { cursor: pointer; font-weight: bold; border: none; color: white; transition: 0.2s; }
+        button:active { transform: scale(0.96); }
+        button.lokasi { background-color: var(--accent); font-size: 14px; }
+        button.tambah { background-color: var(--success); font-size: 15px; margin-top: 15px; padding: 15px; }
+        button.export { background-color: #107c41; margin-top: 15px; font-size: 13px; }
+        button.pdf { background-color: #b91c1c; margin-top: 5px; font-size: 13px; }
 
-        .map-wrapper { position: relative; margin: 15px 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
-        #map { height: 320px; z-index: 1; }
+        .map-wrapper { position: relative; margin: 10px 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+        #map { height: 350px; z-index: 1; }
         .center-crosshair { position: absolute; top: 50%; left: 50%; width: 36px; height: 36px; margin-top: -36px; margin-left: -18px; z-index: 1000; pointer-events: none; }
 
-        .tabel-container { overflow-x: auto; margin-top: 15px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color); }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { padding: 12px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
-        th { background-color: var(--bg-body); color: var(--text-muted); font-weight: 600; }
-        
-        .btn-table { padding: 6px 10px; font-size: 11px; margin: 2px; border-radius: 6px; width: auto; display: inline-flex; color: white; text-decoration: none; }
-        .btn-rute { background-color: var(--accent); }
-        .btn-wa { background-color: #25D366; color: #000; }
-        .btn-hapus { background-color: var(--danger); }
-        
-        .badge-status { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; background: var(--border-color); }
+        /* Style Kamera & Upload Foto */
+        .photo-upload-box { border: 2px dashed var(--border-color); padding: 15px; text-align: center; border-radius: 8px; margin: 10px 0; position: relative; }
+        .photo-upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        #previewFoto { max-width: 100px; max-height: 100px; border-radius: 8px; display: none; margin: 10px auto 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .tabel-container { overflow-x: auto; margin-top: 10px; background: var(--input-bg); border-radius: 8px; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th, td { padding: 10px; text-align: left; font-size: 12px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+        th { background-color: var(--border-color); color: var(--text-main); }
+        .img-table { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; }
+
+        /* Print Mode (Menghilangkan elemen UI saat cetak PDF) */
+        @media print {
+            body { background: white; color: black; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .no-print { display: none !important; }
+            table { border: 1px solid #000; }
+            th, td { border: 1px solid #000; color: black; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="networkStatus">⚠️ Anda Sedang Offline (Tidak ada koneksi internet)</div>
-
-        <div class="header-app">
+    <div class="container" id="appContainer">
+        <div class="header-app no-print">
             <div class="header-title">
-                <h2>SIG KONSUMEN v5</h2>
-                <p>Edisi Ultimate (Pemetaan & CRM)</p>
+                <h2>🏢 SIG LEVEL 6 (CORP)</h2>
+                <p style="margin:0; font-size: 11px;">Satelit + Kamera + Dikte AI</p>
             </div>
             <button class="btn-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
         </div>
-
-        <div class="dashboard-grid">
-            <div class="stat-box">
-                <div class="title">Total Konsumen</div>
-                <div class="value" id="totalCounter">0</div>
-            </div>
-            <div class="stat-box">
-                <div class="title">Status Akurasi GPS</div>
-                <div id="akurasiStatus">Menunggu GPS...</div>
-            </div>
+        
+        <div class="flex-row no-print" style="margin-bottom: 10px;">
+            <input type="text" id="cariArea" placeholder="Ketik area lompat...">
+            <button onclick="cariLokasiPeta()">🔍</button>
+            <button class="lokasi" onclick="kunciGPSPerangkat()">🎯 GPS</button>
         </div>
         
-        <div class="flex-row">
-            <input type="text" id="cariArea" placeholder="Ketik area untuk melompat...">
-            <button onclick="cariLokasiPeta()">🔍 Cari</button>
-        </div>
-
-        <button class="lokasi" onclick="kunciGPSPerangkat()">🎯 Paksa Kunci GPS Presisi Tinggi</button>
-        
-        <div class="map-wrapper">
+        <div class="map-wrapper no-print">
             <div id="map"></div>
             <div class="center-crosshair">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,40 +95,50 @@
                 </svg>
             </div>
         </div>
-        
-        <div class="flex-row" style="margin-bottom: 15px;">
-            <input type="text" id="latitude" placeholder="Latitude" readonly>
-            <input type="text" id="longitude" placeholder="Longitude" readonly>
+
+        <div class="no-print">
+            <div class="flex-row" style="margin-bottom: 10px; font-size: 11px;">
+                <input type="text" id="latitude" placeholder="Lat" readonly style="padding: 8px;">
+                <input type="text" id="longitude" placeholder="Lon" readonly style="padding: 8px;">
+            </div>
+
+            <div class="photo-upload-box">
+                <span id="teksKamera">📷 Ketuk untuk Buka Kamera / Foto Rumah</span>
+                <input type="file" accept="image/*" capture="environment" id="inputFoto" onchange="kompresDanPreviewFoto(event)">
+                <img id="previewFoto" alt="Preview">
+            </div>
+
+            <input type="text" id="namaKonsumen" placeholder="1. Nama Konsumen / Toko *" required>
+            
+            <div class="flex-row">
+                <input type="number" id="noWA" placeholder="2. No. WhatsApp">
+                <select id="statusKonsumen" style="flex: 0.6;">
+                    <option value="Baru">Baru</option>
+                    <option value="Tetap">Tetap</option>
+                </select>
+            </div>
+
+            <div class="flex-row">
+                <textarea id="alamatOtomatis" placeholder="3. Patokan / Alamat Lengkap..."></textarea>
+                <button onclick="mulaiDikte()" style="background: var(--warning); padding: 10px; border-radius: 8px;" title="Dikte Suara">🎙️</button>
+            </div>
+            <p style="font-size:10px; color:var(--text-muted); margin-top:-2px;">*Klik 🎙️ lalu bicaralah untuk mengetik alamat secara otomatis.</p>
+            
+            <button class="tambah" onclick="simpanKeDatabase()">💾 SIMPAN DATA BESERTA FOTO</button>
         </div>
 
-        <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Detail Konsumen:</label>
-        
-        <input type="text" id="namaKonsumen" placeholder="1. Nama Lengkap Konsumen / Toko *" required>
-        
-        <div class="flex-row">
-            <input type="number" id="noWA" placeholder="2. No. WhatsApp (Misal: 0812...)">
-            <select id="statusKonsumen">
-                <option value="Konsumen Baru">Konsumen Baru</option>
-                <option value="Pelanggan Tetap">Pelanggan Tetap</option>
-                <option value="Prospek/Leads">Prospek/Leads</option>
-            </select>
-        </div>
-
-        <textarea id="alamatOtomatis" placeholder="3. Alamat Lengkap (Otomatis dari Peta, bisa diedit manual)..."></textarea>
-        
-        <button class="tambah" onclick="simpanKeDatabase()">💾 KUNCI & SIMPAN KE DATABASE</button>
-
-        <div style="margin-top: 35px; border-top: 2px solid var(--border-color); padding-top: 20px;">
-            <h3 style="margin-top: 0;">📋 Database Lapangan</h3>
-            <input type="text" id="cariDiTabel" onkeyup="filterTabelRealtime()" placeholder="🔍 Cari nama atau status konsumen...">
+        <div style="margin-top: 25px; border-top: 2px solid var(--border-color); padding-top: 15px;">
+            <h3 style="margin: 0 0 10px 0;">📋 Database Laporan (<span id="totalCounter">0</span>)</h3>
+            <input type="text" id="cariDiTabel" class="no-print" onkeyup="filterTabelRealtime()" placeholder="🔍 Cari data konsumen...">
             
             <div class="tabel-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Profil Konsumen</th>
-                            <th>Info Alamat & Kontak</th>
-                            <th style="text-align: center;">Tindakan</th>
+                            <th width="70">Foto</th>
+                            <th>Data Konsumen</th>
+                            <th>Koordinat & Patokan</th>
+                            <th class="no-print" width="80">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="isiTabel">
@@ -157,8 +146,11 @@
                 </table>
             </div>
 
-            <button class="export" onclick="exportKeExcelXLSX()">📗 Ekspor ke File Microsoft Excel (.xlsx)</button>
-            <button class="hapus-semua" onclick="kosongkanData()">🗑️ Kosongkan Database HP (Reset)</button>
+            <div class="no-print">
+                <button class="export" onclick="exportKeExcelXLSX()">📗 Ekspor Excel (Tanpa Foto)</button>
+                <button class="pdf" onclick="window.print()">🖨️ Cetak Laporan PDF (Dengan Foto)</button>
+                <button style="background: transparent; color: var(--danger); border: 1px solid var(--danger); width: 100%; margin-top:15px; padding: 8px;" onclick="kosongkanData()">🗑️ Reset Database</button>
+            </div>
         </div>
     </div>
 
@@ -166,33 +158,38 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
     <script>
-        // 1. SISTEM DETEKSI INTERNET
-        window.addEventListener('online', function() { document.getElementById('networkStatus').classList.remove('offline-bar'); });
-        window.addEventListener('offline', function() { document.getElementById('networkStatus').classList.add('offline-bar'); });
-        if(!navigator.onLine) { document.getElementById('networkStatus').classList.add('offline-bar'); }
-
-        // 2. SISTEM DARK MODE
-        let isDark = localStorage.getItem('themeDark') === 'true';
+        // DARK MODE
+        let isDark = localStorage.getItem('themeDark6') === 'true';
         if(isDark) document.body.classList.add('dark-mode');
         document.getElementById('themeBtn').innerText = isDark ? "☀️" : "🌙";
-        
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             let isNowDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('themeDark', isNowDark);
+            localStorage.setItem('themeDark6', isNowDark);
             document.getElementById('themeBtn').innerText = isNowDark ? "☀️" : "🌙";
         }
 
-        // 3. INISIALISASI PETA & DATABASE
-        let databaseLokasi = JSON.parse(localStorage.getItem('dbSIG_V5')) || [];
+        // INIT PETA (Dengan Opsi Layer Peta Biasa vs Peta Satelit)
         var map = L.map('map', { zoomControl: false }).setView([-2.548926, 118.014863], 5);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+        
+        // Layer Peta Jalan Biasa (OpenStreetMap)
+        var petaJalan = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+        // Layer Peta Satelit (Esri World Imagery)
+        var petaSatelit = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+        
+        petaJalan.addTo(map); // Default awal
+        
+        // Tambahkan tombol pengubah layer di pojok peta
+        L.control.layers({ "Peta Jalan": petaJalan, "Satelit Asli": petaSatelit }).addTo(map);
+
         var radiusAkurasiLingkaran; var waktuTungguAlamat;
+        let databaseLokasi = JSON.parse(localStorage.getItem('dbSIG_V6')) || [];
+        let fotoAktifBase64 = ""; // Penyimpan foto sementara
 
         renderUlangSistem();
 
-        // 4. LOGIKA PETA BERGESER (Gojek Style)
+        // LOGIKA PERGERAKAN PETA
         map.on('move', function () {
             let t = map.getCenter();
             document.getElementById('latitude').value = t.lat.toFixed(7);
@@ -202,42 +199,30 @@
         map.on('moveend', function () {
             let t = map.getCenter();
             clearTimeout(waktuTungguAlamat);
-            if(navigator.onLine) { // Hanya tarik alamat jika internet aktif
-                waktuTungguAlamat = setTimeout(() => lacakAlamatReverseGeocode(t.lat, t.lng), 800);
+            if(navigator.onLine) {
+                waktuTungguAlamat = setTimeout(() => lacakAlamat(t.lat, t.lng), 800);
             }
         });
 
-        function lacakAlamatReverseGeocode(lat, lng) {
-            document.getElementById('alamatOtomatis').value = "⏳ Melacak satelit...";
+        function lacakAlamat(lat, lng) {
+            document.getElementById('alamatOtomatis').value = "⏳ Melacak alamat...";
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
                 .then(res => res.json())
-                .then(data => {
-                    document.getElementById('alamatOtomatis').value = data.display_name || "";
-                }).catch(() => { document.getElementById('alamatOtomatis').value = "Ketik alamat manual..."; });
+                .then(data => { document.getElementById('alamatOtomatis').value = data.display_name || ""; })
+                .catch(() => { document.getElementById('alamatOtomatis').value = ""; });
         }
 
         function kunciGPSPerangkat() {
-            let badge = document.getElementById('akurasiStatus');
-            badge.innerText = "⏳ Mencari Satelit...";
-            badge.style.background = "var(--border-color)";
-
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(pos) {
-                        let lat = pos.coords.latitude;
-                        let lon = pos.coords.longitude;
-                        let akurasi = pos.coords.accuracy; 
-
-                        badge.innerText = `🎯 Akurasi: ${akurasi.toFixed(1)} Meter`;
-                        badge.style.background = akurasi <= 12 ? "var(--success)" : (akurasi <= 35 ? "var(--warning)" : "var(--danger)");
-                        badge.style.color = akurasi <= 12 ? "white" : (akurasi <= 35 ? "#000" : "white");
-
-                        map.setView([lat, lon], 18);
-                        if(radiusAkurasiLingkaran) { map.removeLayer(radiusAkurasiLingkaran); }
-                        radiusAkurasiLingkaran = L.circle([lat, lon], { radius: akurasi, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.2 }).addTo(map);
+                        let lat = pos.coords.latitude; let lon = pos.coords.longitude; let akurasi = pos.coords.accuracy;
+                        map.setView([lat, lon], 19);
+                        if(radiusAkurasiLingkaran) map.removeLayer(radiusAkurasiLingkaran);
+                        radiusAkurasiLingkaran = L.circle([lat, lon], { radius: akurasi, color: '#059669', fillColor: '#10b981', fillOpacity: 0.3 }).addTo(map);
                     },
-                    function() { alert("Gagal mengunci GPS. Pastikan Izin Lokasi aktif!"); badge.innerText = "❌ GPS Gagal"; },
-                    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+                    function() { alert("GPS Gagal dikunci."); },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             }
         }
@@ -247,17 +232,73 @@
             if(!area) return;
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${area}`)
                 .then(res => res.json())
-                .then(data => { if(data.length > 0) map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 16); });
+                .then(data => { if(data.length > 0) map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 17); });
         }
 
-        // FORMAT NOMOR WA OTOMATIS
+        // FITUR AI DIKTE SUARA (Web Speech API)
+        function mulaiDikte() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                return alert("Browser HP Anda tidak mendukung fitur Dikte Suara. Gunakan Google Chrome versi terbaru.");
+            }
+            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            var recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID'; // Bahasa Indonesia
+            recognition.interimResults = false;
+            
+            document.getElementById('alamatOtomatis').placeholder = "🎙️ Mendengarkan... Silakan bicara...";
+            
+            recognition.onresult = function(event) {
+                let teksSuara = event.results[0][0].transcript;
+                let teksLama = document.getElementById('alamatOtomatis').value;
+                document.getElementById('alamatOtomatis').value = teksLama + " " + teksSuara;
+            };
+            recognition.onerror = function() { alert("Suara tidak terdengar."); }
+            recognition.start();
+        }
+
+        // KOMPRESI FOTO OTOMATIS (Mencegah Memori HP/Browser Jebol)
+        function kompresDanPreviewFoto(event) {
+            let file = event.target.files[0];
+            if(!file) return;
+
+            document.getElementById('teksKamera').innerText = "⏳ Memproses foto...";
+            
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(e) {
+                let img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    let canvas = document.createElement('canvas');
+                    let MAX_WIDTH = 400; // Dikompres jadi kecil (Max 400px) agar muat ribuan data
+                    let scaleSize = MAX_WIDTH / img.width;
+                    
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    
+                    let ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Simpan sebagai Base64 JPG Kualitas 60%
+                    fotoAktifBase64 = canvas.toDataURL('image/jpeg', 0.6); 
+                    
+                    // Tampilkan Preview
+                    let preview = document.getElementById('previewFoto');
+                    preview.src = fotoAktifBase64;
+                    preview.style.display = 'block';
+                    document.getElementById('teksKamera').innerText = "✅ Foto Berhasil Diambil (Ketuk gambar untuk ganti)";
+                }
+            }
+        }
+
         function formatWA(nomor) {
             if(!nomor) return "";
-            nomor = nomor.replace(/\D/g,''); // Buang spasi/karakter selain angka
-            if(nomor.startsWith('0')) { nomor = '62' + nomor.substring(1); } // Ubah 0 jadi 62
+            nomor = nomor.replace(/\D/g,'');
+            if(nomor.startsWith('0')) { nomor = '62' + nomor.substring(1); }
             return nomor;
         }
 
+        // SIMPAN KE DATABASE
         function simpanKeDatabase() {
             let nama = document.getElementById('namaKonsumen').value;
             let lat = document.getElementById('latitude').value;
@@ -270,17 +311,29 @@
 
             databaseLokasi.push({ 
                 nama: nama, lat: lat, lon: lon, 
-                alamat: alamat, noWA: formatWA(noWARaw), status: statusKon 
+                alamat: alamat, noWA: formatWA(noWARaw), status: statusKon,
+                foto: fotoAktifBase64 // Menyimpan foto Base64
             });
             
-            localStorage.setItem('dbSIG_V5', JSON.stringify(databaseLokasi));
+            try {
+                localStorage.setItem('dbSIG_V6', JSON.stringify(databaseLokasi));
+            } catch (e) {
+                // Peringatan jika memori LocalStorage (5MB) sudah terlalu penuh
+                alert("Memori HP penuh! Harap Export ke PDF/Excel, lalu tekan Reset Database.");
+                databaseLokasi.pop();
+                return;
+            }
             
-            // Reset Sebagian Field
+            // Reset Form
             document.getElementById('namaKonsumen').value = "";
             document.getElementById('noWA').value = "";
+            document.getElementById('previewFoto').style.display = "none";
+            document.getElementById('teksKamera').innerText = "📷 Ketuk untuk Buka Kamera / Foto Rumah";
+            fotoAktifBase64 = "";
             renderUlangSistem();
         }
 
+        // RENDER TABEL
         function renderUlangSistem() {
             let tbody = document.getElementById('isiTabel');
             tbody.innerHTML = "";
@@ -288,22 +341,25 @@
 
             databaseLokasi.forEach((item, idx) => {
                 let linkWA = item.noWA ? `https://wa.me/${item.noWA}` : '#';
-                let tombolWA = item.noWA ? `<a href="${linkWA}" target="_blank" class="btn-table btn-wa">💬 WA</a>` : '';
+                
+                // Menyiapkan gambar (jika tidak foto, pakai ikon kosong)
+                let imgSrc = item.foto ? item.foto : "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' fill='%23e2e8f0'%3E%3Crect width='60' height='60'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='10'%3ENo Foto%3C/text%3E%3C/svg%3E";
 
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
+                    <td><img src="${imgSrc}" class="img-table" onclick="window.open('${imgSrc}')"></td>
                     <td>
-                        <strong>${item.nama}</strong><br>
-                        <span class="badge-status">${item.status}</span>
+                        <strong style="font-size:14px; color:var(--accent);">${item.nama}</strong><br>
+                        <span style="font-size:10px; background:var(--border-color); padding:2px 5px; border-radius:4px;">${item.status}</span><br>
+                        <span style="font-size:11px;">📞 ${item.noWA ? '+' + item.noWA : '-'}</span>
                     </td>
                     <td>
-                        <div style="font-size:11px; max-height:40px; overflow-y:auto; margin-bottom:5px;">${item.alamat || '-'}</div>
-                        <span style="font-family:monospace; font-size:10px; color:var(--accent);">${item.lat}, ${item.lon}</span>
+                        <div style="font-size:11px; margin-bottom:4px;">${item.alamat || '-'}</div>
+                        <span style="font-family:monospace; font-size:10px; color:#059669;">${item.lat}, ${item.lon}</span>
                     </td>
-                    <td style="text-align:center; min-width:90px;">
-                        ${tombolWA}
-                        <button class="btn-table btn-rute" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=$${item.lat},${item.lon}')">🧭 Peta</button>
-                        <button class="btn-table btn-hapus" onclick="hapusSatuData(${idx})">🗑️</button>
+                    <td class="no-print" style="text-align:center;">
+                        ${item.noWA ? `<a href="${linkWA}" target="_blank" style="text-decoration:none; display:block; background:#25D366; color:white; padding:4px; border-radius:4px; font-size:10px; margin-bottom:4px;">💬 WA</a>` : ''}
+                        <button style="background:var(--danger); padding:4px 8px; border-radius:4px; border:none; color:white; font-size:10px;" onclick="hapusSatuData(${idx})">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -322,42 +378,33 @@
         function hapusSatuData(idx) {
             if(confirm("Hapus data konsumen ini?")) {
                 databaseLokasi.splice(idx, 1);
-                localStorage.setItem('dbSIG_V5', JSON.stringify(databaseLokasi));
+                localStorage.setItem('dbSIG_V6', JSON.stringify(databaseLokasi));
                 renderUlangSistem();
             }
         }
 
         function kosongkanData() {
-            if(confirm("HAPUS SEMUA DATA? Pastikan Anda sudah Export ke Excel!")) {
+            if(confirm("HAPUS SEMUA DATA? Pastikan Anda sudah Export ke Excel / Cetak PDF!")) {
                 databaseLokasi = [];
-                localStorage.removeItem('dbSIG_V5');
+                localStorage.removeItem('dbSIG_V6');
                 renderUlangSistem();
             }
         }
 
+        // EXCEL EXPORT (Tanpa Foto karena Excel native menolak Base64 img)
         function exportKeExcelXLSX() {
             if(databaseLokasi.length === 0) return alert("Belum ada data!");
-            
             let formatExcel = databaseLokasi.map((item, index) => ({
-                "No": index + 1,
-                "Nama Konsumen": item.nama,
-                "Kategori Status": item.status,
-                "Nomor WhatsApp": item.noWA ? `+${item.noWA}` : "-",
-                "Alamat Lapangan": item.alamat,
-                "Latitude": parseFloat(item.lat),
-                "Longitude": parseFloat(item.lon),
-                "Link Direct WhatsApp": item.noWA ? `https://wa.me/${item.noWA}` : "-",
-                "Link Google Maps": `https://www.google.com/maps/search/?api=1&query=$${item.lat},${item.lon}`
+                "No": index + 1, "Nama Konsumen": item.nama, "Status": item.status, "WhatsApp": item.noWA ? `+${item.noWA}` : "-",
+                "Alamat Lapangan": item.alamat, "Latitude": parseFloat(item.lat), "Longitude": parseFloat(item.lon),
+                "Google Maps": `http://googleusercontent.com/maps.google.com/5{item.lat},${item.lon}`
             }));
-
             let ws = XLSX.utils.json_to_sheet(formatExcel);
             let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Database Konsumen");
-
-            ws['!cols'] = [{wch: 4}, {wch: 25}, {wch: 15}, {wch: 18}, {wch: 45}, {wch: 15}, {wch: 15}, {wch: 30}, {wch: 35}];
-
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan Survei");
+            ws['!cols'] = [{wch: 4}, {wch: 25}, {wch: 10}, {wch: 18}, {wch: 40}, {wch: 15}, {wch: 15}, {wch: 35}];
             let h = new Date().toISOString().slice(0,10);
-            XLSX.writeFile(wb, `Database_Konsumen_V5_${h}.xlsx`);
+            XLSX.writeFile(wb, `Laporan_Survei_Lapangan_${h}.xlsx`);
         }
     </script>
 </body>
