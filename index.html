@@ -3,115 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Informasi Geografis Konsumen (SIG-K)</title>
+    <title>Sistem Pemetaan Konsumen - Ultra Precision v4</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         :root {
-            --primary: #1e3a8a;
-            --primary-light: #3b82f6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1f2937;
-            --light: #f3f4f6;
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
         }
 
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; color: var(--dark); }
-        .container { max-width: 650px; margin: auto; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-main); margin: 0; padding: 10px; color: #334155; }
+        .container { max-width: 650px; margin: auto; background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05); }
         
-        /* Header Premium */
-        .header-app { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--light); padding-bottom: 15px; }
-        .header-app h2 { margin: 0; color: var(--primary); font-size: 24px; }
-        .header-app p { margin: 5px 0 0 0; color: #6b7280; font-size: 13px; }
+        .header-app { text-align: center; margin-bottom: 20px; }
+        .header-app h2 { margin: 0; color: var(--primary); font-size: 22px; font-weight: 800; }
+        .header-app p { margin: 5px 0 0 0; color: #64748b; font-size: 13px; }
         
-        /* Dashboard Stats */
-        .stats-card { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .stats-card .count { font-size: 28px; font-weight: bold; }
+        /* Stats & GPS Accuracy Meter */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #f1f5f9; padding: 12px; border-radius: 10px; text-align: center; }
+        .stat-box .title { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+        .stat-box .value { font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 2px; }
         
-        input, button, textarea { padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; }
-        input:focus, textarea:focus { border-color: var(--primary-light); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-        textarea { resize: vertical; height: 70px; font-family: inherit; }
+        /* Live GPS Accuracy Color Coding */
+        #akurasiStatus { font-size: 13px; font-weight: 700; padding: 6px; border-radius: 6px; background: #e2e8f0; color: #475569; display: inline-block; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 10px; }
+
+        input, button, textarea { padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; }
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        textarea { resize: vertical; height: 75px; font-family: inherit; }
         
         .flex-row { display: flex; gap: 8px; }
         .flex-row input { flex: 1; }
-        .flex-row button { width: auto; padding: 12px 18px; background-color: #4b5563; }
+        .flex-row button { width: auto; padding: 12px 18px; background-color: #475569; }
         
-        button { cursor: pointer; font-weight: bold; border: none; color: white; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button:active { transform: scale(0.98); }
-        button.lokasi { background-color: var(--primary-light); }
-        button.tambah { background-color: var(--warning); font-size: 16px; margin-top: 15px; color: #1f2937; }
+        button { cursor: pointer; font-weight: bold; border: none; color: white; transition: all 0.2s; }
+        button:active { transform: scale(0.97); }
+        button.lokasi { background-color: var(--accent); font-size: 15px; }
+        button.tambah { background-color: #f59e0b; font-size: 16px; margin-top: 15px; color: #1e293b; }
         button.export { background-color: var(--success); margin-top: 25px; font-size: 15px; }
-        button.hapus-semua { background-color: #9ca3af; margin-top: 10px; font-size: 13px; }
+        button.hapus-semua { background-color: #94a3b8; margin-top: 10px; font-size: 13px; }
         
-        /* Action Buttons di Tabel */
+        /* Map Wrapper & Crosshair (Gojek Style) */
+        .map-wrapper { position: relative; margin: 15px 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        #map { height: 340px; z-index: 1; }
+        
+        /* Ikon Target Statis di Tengah Peta */
+        .center-crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 36px;
+            height: 36px;
+            margin-top: -36px; /* Menyesuaikan tinggi ujung pin kaki */
+            margin-left: -18px;
+            z-index: 1000;
+            pointer-events: none; /* Klik tembus ke peta di bawahnya */
+        }
+
+        .tabel-container { overflow-x: auto; margin-top: 15px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 12px; text-align: left; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: 600; }
+        
         .btn-table { padding: 6px 10px; font-size: 12px; margin: 2px; border-radius: 6px; width: auto; display: inline-flex; }
         .btn-rute { background-color: #2563eb; }
         .btn-hapus { background-color: var(--danger); }
-
-        #map { height: 320px; margin: 15px 0; border-radius: 12px; border: 1px solid #e5e7eb; z-index: 1; }
-        .badge { display: inline-block; padding: 5px 10px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 11px; margin-bottom: 10px; font-weight: 600; text-align: center; width: 100%; box-sizing: border-box; }
         
-        /* Section Tabel */
-        .section-tabel { margin-top: 30px; border-top: 2px solid var(--light); padding-top: 20px; }
-        .search-tabel { background-color: #f9fafb; border: 1px solid #e5e7eb; margin-bottom: 10px; }
-        .tabel-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th, td { padding: 12px; text-align: left; font-size: 13px; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #f9fafb; color: #4b5563; font-weight: 600; }
-        tr:hover { background-color: #f9fafb; }
+        .search-tabel { background-color: #f8fafc; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header-app">
-            <h2>SIG KONSUMEN PRO</h2>
-            <p>Pelacakan Koordinat, Alamat Otomatis & Navigasi Rute</p>
+            <h2>SIG KONSUMEN - ULTRA PRECISION</h2>
+            <p>Sistem Pemetaan Lapangan Akurasi Tinggi & Manajemen Rute</p>
         </div>
 
-        <div class="stats-card">
-            <div>
-                <div style="font-size: 14px; opacity: 0.9;">Total Konsumen Terdata</div>
-                <div style="font-size: 11px; opacity: 0.7;">Tersimpan aman di memori HP</div>
+        <div class="dashboard-grid">
+            <div class="stat-box">
+                <div class="title">Total Konsumen</div>
+                <div class="value" id="totalCounter">0</div>
             </div>
-            <div class="count" id="totalCounter">0</div>
+            <div class="stat-box">
+                <div class="title">Status Akurasi</div>
+                <div id="akurasiStatus">Menunggu GPS...</div>
+            </div>
         </div>
         
         <div class="flex-row">
-            <input type="text" id="cariArea" placeholder="Ketik nama jalan / kelurahan untuk cari...">
+            <input type="text" id="cariArea" placeholder="Ketik kelurahan/jalan untuk potong kompas...">
             <button onclick="cariLokasiPeta()">🔍 Cari</button>
         </div>
 
-        <button class="lokasi" onclick="dapatkanLokasiGPS()">🎯 Kunci GPS HP Saat Ini</button>
+        <button class="lokasi" onclick="kunciGPSPerangkat()">🎯 Paksa Kunci GPS Hardware HP</button>
         
-        <div id="map"></div>
-        <span class="badge">💡 Sinyal kurang pas? Ketuk peta atau geser pin merah ke atap rumah konsumen</span>
+        <div class="map-wrapper">
+            <div id="map"></div>
+            <div class="center-crosshair">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
+                </svg>
+            </div>
+        </div>
         
         <div class="flex-row">
             <input type="text" id="latitude" placeholder="Latitude" readonly>
             <input type="text" id="longitude" placeholder="Longitude" readonly>
         </div>
 
-        <textarea id="alamatOtomatis" placeholder="Alamat konsumen (Akan terisi otomatis saat pin peta ditentukan)..." readonly></textarea>
+        <label style="font-size: 12px; font-weight: bold; color: #64748b;">Alamat Terdeteksi (Silakan edit/tambah detail jika kurang pas):</label>
+        <textarea id="alamatOtomatis" placeholder="Geser peta untuk mendeteksi alamat secara otomatis..."></textarea>
         
-        <input type="text" id="namaKonsumen" placeholder="Nama / Kode Unik Konsumen" required>
+        <input type="text" id="namaKonsumen" placeholder="Masukkan Nama Lengkap Konsumen" required>
         
-        <button class="tambah" onclick="simpanKeTabel()">💾 Simpan Ke Tabel</button>
+        <button class="tambah" onclick="simpanKeDatabase()">💾 Kunci & Simpan Data Konsumen</button>
 
-        <div class="section-tabel">
-            <h3>📋 Database Hasil Lapangan</h3>
-            <input type="text" id="cariDiTabel" class="search-tabel" onkeyup="filterTabel()" placeholder="🔍 Ketik nama untuk memfilter tabel secara cepat...">
+        <div style="margin-top: 30px; border-top: 2px solid #f1f5f9; padding-top: 15px;">
+            <h3>📋 Database Hasil Survei</h3>
+            <input type="text" id="cariDiTabel" class="search-tabel" onkeyup="filterTabelRealtime()" placeholder="🔍 Ketik nama konsumen untuk mencari cepat...">
             
             <div class="tabel-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Nama Konsumen</th>
-                            <th>Alamat Terdeteksi</th>
-                            <th>Koordinat</th>
-                            <th style="text-align: center;">Aksi</th>
+                            <th>Nama</th>
+                            <th>Alamat Validasi</th>
+                            <th>Koordinat (Lat, Long)</th>
+                            <th style="text-align: center;">Navigasi</th>
                         </tr>
                     </thead>
                     <tbody id="isiTabel">
@@ -119,8 +144,8 @@
                 </table>
             </div>
 
-            <button class="export" onclick="exportKeExcelXLSX()">📗 Download File Excel (.xlsx)</button>
-            <button class="hapus-semua" onclick="kosongkanData()">🗑️ Reset / Hapus Semua Data</button>
+            <button class="export" onclick="exportKeExcelXLSX()">📗 Download Laporan Excel Resmi (.xlsx)</button>
+            <button class="hapus-semua" onclick="kosongkanData()">🗑️ Reset Seluruh Database Lapangan</button>
         </div>
     </div>
 
@@ -128,198 +153,203 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
     <script>
-        // Memuat database lokal
-        let dataKonsumen = JSON.parse(localStorage.getItem('dbSIGPro')) || [];
+        let databaseLokasi = JSON.parse(localStorage.getItem('dbSIGPrecision')) || [];
         
-        // Inisialisasi Peta
-        var map = L.map('map').setView([-2.548926, 118.014863], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-        var marker = L.marker([-2.548926, 118.014863], { draggable: true }).addTo(map);
-        var radiusAkurasi; 
+        // Inisialisasi Peta Awal (Fokus Nasional Indonesia)
+        var map = L.map('map', { zoomControl: false }).setView([-2.548926, 118.014863], 5);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // Jalankan fungsi awal
-        renderTabel();
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        
+        var radiusAkurasiLingkaran;
+        var waktuTungguAlamat;
 
-        // Fungsi memperbarui koordinat & memicu pelacakan alamat otomatis
-        function updateSistemLokasi(lat, lng) {
-            document.getElementById('latitude').value = lat.toFixed(6);
-            document.getElementById('longitude').value = lng.toFixed(6);
-            lacakAlamatOtomatis(lat, lng);
-        }
+        // Jalankan render tabel bawaan memory HP
+        renderUlangSistem();
 
-        // Event Pergerakan Peta
-        marker.on('dragend', function () { updateSistemLokasi(marker.getLatLng().lat, marker.getLatLng().lng); });
-        map.on('click', function(e) { 
-            marker.setLatLng(e.latlng); 
-            updateSistemLokasi(e.latlng.lat, e.latlng.lng); 
+        // LOGIKA UTAMA: Setiap kali peta digeser/di-pan oleh user, ambil titik tengahnya (Gojek Style)
+        map.on('move', function () {
+            let tengahPeta = map.getCenter();
+            // Tampilkan presisi tinggi sampai 7 angka desimal
+            document.getElementById('latitude').value = tengahPeta.lat.toFixed(7);
+            document.getElementById('longitude').value = tengahPeta.lng.toFixed(7);
         });
 
-        // FITUR CANGGIH 1: Ambil Alamat Otomatis (Reverse Geocoding)
-        function lacakAlamatOtomatis(lat, lng) {
-            document.getElementById('alamatOtomatis').value = "⏳ Menghubungi satelit, melacak alamat...";
-            
+        // Ketika pergeseran peta selesai, pemicu pencarian alamat (Biar tidak boros kuota internet)
+        map.on('moveend', function () {
+            let tengahPeta = map.getCenter();
+            clearTimeout(waktuTungguAlamat);
+            waktuTungguAlamat = setTimeout(function() {
+                lacakAlamatReverseGeocode(tengahPeta.lat, tengahPeta.lng);
+            }, 800); // Tunggu user berhenti menggeser selama 0.8 detik
+        });
+
+        // Ambil Alamat via Satelit OpenStreetMap (Reverse Geocoding)
+        function lacakAlamatReverseGeocode(lat, lng) {
+            document.getElementById('alamatOtomatis').value = "⏳ Melacak koordinat alamat fisik...";
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     if(data && data.display_name) {
                         document.getElementById('alamatOtomatis').value = data.display_name;
                     } else {
-                        document.getElementById('alamatOtomatis').value = "Alamat tidak terdeteksi sistem, silakan lanjut simpan.";
+                        document.getElementById('alamatOtomatis').value = "";
                     }
                 })
                 .catch(() => {
-                    document.getElementById('alamatOtomatis').value = "Gagal memuat alamat otomatis (Koneksi internet lambat). Data koordinat tetap aman.";
+                    document.getElementById('alamatOtomatis').value = "Koneksi lambat. Silakan ketik alamat manual di sini.";
                 });
         }
 
-        // Pencarian Area Peta
-        function cariLokasiPeta() {
-            let kataKunci = document.getElementById('cariArea').value;
-            if(!kataKunci) return alert("Ketik nama daerah!");
-            
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${kataKunci}`)
-                .then(response => response.json())
-                .then(data => {
-                    if(data.length > 0) {
-                        let lat = parseFloat(data[0].lat);
-                        let lon = parseFloat(data[0].lon);
-                        map.setView([lat, lon], 16);
-                        marker.setLatLng([lat, lon]);
-                        updateSistemLokasi(lat, lon);
-                    } else { alert("Lokasi tidak ditemukan."); }
-                });
-        }
+        // Kunci GPS Perangkat dengan Protokol Akurasi Maksimal Hardware
+        function kunciGPSPerangkat() {
+            let badge = document.getElementById('akurasiStatus');
+            badge.innerText = "⏳ Mencari Satelit...";
+            badge.style.background = "#eff6ff"; badge.style.color = "#1e40af";
 
-        // GPS Utama dengan Akurasi Tinggi
-        function dapatkanLokasiGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
                         let lat = position.coords.latitude;
                         let lon = position.coords.longitude;
-                        let akurasi = position.coords.accuracy; 
-                        
-                        map.setView([lat, lon], 18);
-                        marker.setLatLng([lat, lon]);
-                        updateSistemLokasi(lat, lon);
+                        let akurasi = position.coords.accuracy; // Akurasi dalam satuan meter
 
-                        if(radiusAkurasi) { map.removeLayer(radiusAkurasi); }
-                        radiusAkurasi = L.circle([lat, lon], { radius: akurasi, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.15 }).addTo(map);
+                        // Perbarui status warna akurasi meteran
+                        badge.innerText = `🎯 Akurasi: ${akurasi.toFixed(1)} Meter`;
+                        if(akurasi <= 12) {
+                            badge.style.background = "#d1fae5"; badge.style.color = "#065f46"; // Hijau: Sangat Presisi
+                        } else if(akurasi <= 35) {
+                            badge.style.background = "#fef3c7"; badge.style.color = "#92400e"; // Kuning: Sedang
+                        } else {
+                            badge.style.background = "#fee2e2"; badge.style.color = "#991b1b"; // Merah: Buruk/Dalam Ruangan
+                        }
+
+                        // Terbangkan peta tepat ke posisi GPS HP
+                        map.setView([lat, lon], 18);
+
+                        // Gambar radius melesatnya lingkaran biru di peta
+                        if(radiusAkurasiLingkaran) { map.removeLayer(radiusAkurasiLingkaran); }
+                        radiusAkurasiLingkaran = L.circle([lat, lon], { radius: akurasi, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.12 }).addTo(map);
                     },
-                    function() { alert("Gagal mengunci GPS. Silakan klik manual pada peta."); },
-                    { enableHighAccuracy: true } 
+                    function() { 
+                        alert("Gagal mengunci GPS Hardware. Pastikan Izin Lokasi/GPS di HP Anda sudah aktif!"); 
+                        badge.innerText = "❌ GPS Mati";
+                        badge.style.background = "#fee2e2"; badge.style.color = "#991b1b";
+                    },
+                    { 
+                        enableHighAccuracy: true, // WAJIB: Paksa chip GPS internal bekerja, bukan lewat estimasi internet internet
+                        timeout: 12000,           // Batas tunggu respon satelit 12 detik
+                        maximumAge: 0             // Tolak lokasi cache kadaluwarsa, wajib data real-time detik ini
+                    }
                 );
             }
         }
 
-        // Simpan Data
-        function simpanKeTabel() {
+        // Pencarian Lokasi Cepat lewat Kolom Cari Area
+        function cariLokasiPeta() {
+            let area = document.getElementById('cariArea').value;
+            if(!area) return alert("Ketik nama daerah/jalan!");
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${area}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.length > 0) {
+                        map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 16);
+                    } else { alert("Daerah tidak ditemukan."); }
+                });
+        }
+
+        // Simpan Data Ke Sistem HP
+        function simpanKeDatabase() {
             let nama = document.getElementById('namaKonsumen').value;
             let lat = document.getElementById('latitude').value;
             let lon = document.getElementById('longitude').value;
             let alamat = document.getElementById('alamatOtomatis').value;
 
-            if(!nama || !lat || !lon) return alert("Mohon isi Nama dan tentukan Titik Peta!");
+            if(!nama || !lat || !lon) return alert("Nama Konsumen belum diisi atau peta belum diarahkan!");
 
-            dataKonsumen.push({ nama: nama, latitude: lat, longitude: lon, alamat: alamat });
-            localStorage.setItem('dbSIGPro', JSON.stringify(dataKonsumen));
+            databaseLokasi.push({ nama: nama, latitude: lat, longitude: lon, alamat: alamat });
+            localStorage.setItem('dbSIGPrecision', JSON.stringify(databaseLokasi));
             
-            // Reset Form input
+            // Reset input nama saja, agar peta tidak terlempar ulang
             document.getElementById('namaKonsumen').value = "";
-            document.getElementById('cariArea').value = "";
-            renderTabel();
+            renderUlangSistem();
+            alert("Data berhasil disimpan!");
         }
 
-        // Render Tampilan Tabel & Counter
-        function renderTabel() {
+        // Sinkronisasi Tabel & Angka Counter
+        function renderUlangSistem() {
             let tbody = document.getElementById('isiTabel');
-            tbody.innerHTML = ""; 
-            
-            // Update Dashboard Counter
-            document.getElementById('totalCounter').innerText = dataKonsumen.length;
-            
-            dataKonsumen.forEach((item, index) => {
+            tbody.innerHTML = "";
+            document.getElementById('totalCounter').innerText = databaseLokasi.length;
+
+            databaseLokasi.forEach((item, idx) => {
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${item.nama}</strong></td>
-                    <td><div style="max-height:60px; overflow-y:auto; font-size:11px; color:#4b5563;">${item.alamat || 'Tidak ada data'}</div></td>
-                    <td><span style="font-size: 11px; font-family:monospace;">${item.latitude},<br>${item.longitude}</span></td>
-                    <td style="text-align:center; min-width:120px;">
-                        <button class="btn-table btn-rute" onclick="bukaRuteGoogleMaps(${item.latitude}, ${item.longitude})">🧭 Rute</button>
-                        <button class="btn-table btn-hapus" onclick="hapusBaris(${index})">Hapus</button>
+                    <td><div style="max-height:55px; overflow-y:auto; font-size:11px; color:#475569;">${item.alamat || 'Tidak ada detail alamat'}</div></td>
+                    <td><span style="font-family:monospace; font-size:11px; color:#2563eb;">${item.latitude},<br>${item.longitude}</span></td>
+                    <td style="text-align:center; min-width:115px;">
+                        <button class="btn-table btn-rute" onclick="bukaNavigasiRute(${item.latitude}, ${item.longitude})">🧭 Rute</button>
+                        <button class="btn-table btn-hapus" onclick="hapusSatuData(${idx})">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Fungsi Buka Rute Google Maps Aplikasi
-        function bukaRuteGoogleMaps(lat, lon) {
-            let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
-            window.open(url, '_blank');
+        // Buka Google Maps Mode Navigasi Rute Berkendara Asli
+        function bukaNavigasiRute(lat, lon) {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`, '_blank');
         }
 
-        // FITUR CANGGIH 3: Pencarian/Filter Otomatis di Tabel
-        function filterTabel() {
-            let input = document.getElementById("cariDiTabel").value.toLowerCase();
-            let tbody = document.getElementById("isiTabel");
-            let tr = tbody.getElementsByTagName("tr");
-
-            for (let i = 0; i < tr.length; i++) {
-                let tdNama = tr[i].getElementsByTagName("td")[0];
-                let tdAlamat = tr[i].getElementsByTagName("td")[1];
-                if (tdNama || tdAlamat) {
-                    let teksNama = tdNama.textContent || tdNama.innerText;
-                    let teksAlamat = tdAlamat.textContent || tdAlamat.innerText;
-                    if (teksNama.toLowerCase().indexOf(input) > -1 || teksAlamat.toLowerCase().indexOf(input) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }       
+        // Filter Pencarian Data Konsumen di Tabel (Real-time sembari mengetik)
+        function filterTabelRealtime() {
+            let filter = document.getElementById("cariDiTabel").value.toLowerCase();
+            let rows = document.getElementById("isiTabel").getElementsByTagName("tr");
+            for (let i = 0; i < rows.length; i++) {
+                let txtValue = rows[i].textContent || rows[i].innerText;
+                rows[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
             }
         }
 
-        function hapusBaris(index) {
+        function hapusSatuData(idx) {
             if(confirm("Hapus data konsumen ini?")) {
-                dataKonsumen.splice(index, 1); 
-                localStorage.setItem('dbSIGPro', JSON.stringify(dataKonsumen)); 
-                renderTabel(); 
+                databaseLokasi.splice(idx, 1);
+                localStorage.setItem('dbSIGPrecision', JSON.stringify(databaseLokasi));
+                renderUlangSistem();
             }
         }
 
         function kosongkanData() {
-            if(confirm("Hapus seluruh database di HP? Pastikan sudah di-download ke Excel.")) {
-                dataKonsumen = [];
-                localStorage.removeItem('dbSIGPro');
-                renderTabel();
+            if(confirm("Hapus semua database di HP Anda? Tindakan ini permanen.")) {
+                databaseLokasi = [];
+                localStorage.removeItem('dbSIGPrecision');
+                renderUlangSistem();
             }
         }
 
-        // Export XLSX Komplit dengan Kolom Alamat Berformat Rapi
+        // Export Excel XLSX Premium Format
         function exportKeExcelXLSX() {
-            if(dataKonsumen.length === 0) return alert("Belum ada data untuk di-export!");
+            if(databaseLokasi.length === 0) return alert("Belum ada data survei untuk diexport!");
             
-            let dataUntukExcel = dataKonsumen.map((item, index) => ({
-                "No": index + 1,
-                "Nama Konsumen": item.nama,
-                "Alamat Lengkap Terdeteksi": item.alamat,
-                "Latitude": item.latitude,
-                "Longitude": item.longitude,
-                "Link Peta Lokasi": `https://maps.google.com/?q=${item.latitude},${item.longitude}`
+            let formatExcel = databaseLokasi.map((item, index) => ({
+                "No.": index + 1,
+                "Nama Lengkap Konsumen": item.nama,
+                "Alamat Lapangan Valid": item.alamat,
+                "Koordinat Latitude": parseFloat(item.latitude),
+                "Koordinat Longitude": parseFloat(item.longitude),
+                "Link Google Maps Jalur": `https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`
             }));
 
-            let worksheet = XLSX.utils.json_to_sheet(dataUntukExcel);
-            let workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Koordinat");
+            let ws = XLSX.utils.json_to_sheet(formatExcel);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan Presisi Tinggi");
 
-            // Mengatur lebar kolom otomatis agar rapi saat dibuka di Excel
-            worksheet['!cols'] = [
-                {wch: 5},  {wch: 20}, {wch: 45}, {wch: 15}, {wch: 15}, {wch: 35}
-            ];
+            // Atur Lebar Kolom Excel agar pas dibuka langsung rapi
+            ws['!cols'] = [{wch: 5}, {wch: 25}, {wch: 50}, {wch: 18}, {wch: 18}, {wch: 35}];
 
-            let tanggal = new Date().toISOString().slice(0,10);
-            XLSX.writeFile(workbook, `Laporan_Lokasi_Konsumen_${tanggal}.xlsx`);
+            let hariIni = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `Laporan_Ultra_Presisi_Konsumen_${hariIni}.xlsx`);
         }
     </script>
 </body>
